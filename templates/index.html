@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ComplianceRadar — Indian MSME Compliance Intelligence</title>
+<style>
+  :root {
+    --bg: #0a0b10;
+    --surface: #12131a;
+    --surface2: #1a1b25;
+    --border: #252638;
+    --text: #e8e8f0;
+    --dim: #7878a0;
+    --green: #00e878;
+    --green-bg: rgba(0,232,120,0.08);
+    --yellow: #ffcc00;
+    --yellow-bg: rgba(255,204,0,0.08);
+    --red: #ff4466;
+    --red-bg: rgba(255,68,102,0.08);
+    --blue: #4488ff;
+    --blue-bg: rgba(68,136,255,0.08);
+    --accent: #00e878;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ---- Header ---- */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #000;
+  }
+  .header-tag {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dim);
+    background: var(--surface2);
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+
+  /* ---- Main Layout ---- */
+  .main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+  /* ---- Input Section ---- */
+  .input-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .input-section h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label {
+    font-size: 12px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .form-group input, .form-group select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--accent);
+  }
+
+  .portal-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .portal-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .portal-chip.selected {
+    border-color: var(--accent);
+    background: var(--green-bg);
+    color: var(--accent);
+  }
+  .portal-chip:hover { border-color: var(--dim); }
+
+  .scan-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .scan-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .scan-btn .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- Results Section ---- */
+  .results-section { display: none; }
+  .results-section.active { display: block; }
+
+  /* Overall Score */
+  .score-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .score-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 4px solid;
+  }
+  .score-circle.green { border-color: var(--green); color: var(--green); }
+  .score-circle.yellow { border-color: var(--yellow); color: var(--yellow); }
+  .score-circle.red { border-color: var(--red); color: var(--red); }
+  .score-number { font-size: 32px; font-weight: 700; line-height: 1; }
+  .score-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .score-info h3 { font-size: 18px; margin-bottom: 4px; }
+  .score-info p { color: var(--dim); font-size: 14px; }
+
+  /* Agent Activity Feed */
+  .agent-feed {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .agent-feed h3 {
+    font-size: 14px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .feed-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-icon { font-size: 18px; width: 28px; text-align: center; }
+  .feed-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .feed-status.running { background: var(--yellow); animation: pulse 1.5s infinite; }
+  .feed-status.completed { background: var(--green); }
+  .feed-status.failed { background: var(--red); }
+  .feed-status.queued { background: var(--dim); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .feed-name { font-weight: 500; min-width: 200px; }
+  .feed-progress { color: var(--dim); flex: 1; }
+
+  /* Portal Cards */
+  .portal-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .portal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .portal-card:hover { border-color: var(--dim); }
+  .portal-card-header {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .portal-card-icon { font-size: 24px; }
+  .portal-card-name { font-weight: 600; flex: 1; }
+  .portal-card-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-red { background: var(--red-bg); color: var(--red); }
+  .badge-loading { background: var(--blue-bg); color: var(--blue); }
+
+  .portal-card-body { padding: 16px; }
+  .portal-card-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .portal-card-detail {
+    font-size: 13px;
+    color: var(--dim);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .portal-card-action {
+    font-size: 12px;
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-radius: 6px;
+    color: var(--dim);
+    border-left: 3px solid var(--accent);
+  }
+  .portal-card-action.red-action { border-left-color: var(--red); }
+  .portal-card-action.yellow-action { border-left-color: var(--yellow); }
+
+  .portal-card-data {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 12px;
+  }
+  .data-key { color: var(--dim); }
+  .data-value { color: var(--text); font-weight: 500; text-align: right; max-width: 60%; }
+
+  /* Gap Alert */
+  .gap-alert {
+    background: var(--red-bg);
+    border: 1px solid rgba(255,68,102,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .gap-alert.visible { display: block; }
+  .gap-alert h3 {
+    color: var(--red);
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gap-alert p { color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  /* Deadline Timeline */
+  .timeline-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .timeline-section h3 {
+    font-size: 14px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .timeline-dot.urgent { background: var(--red); }
+  .timeline-dot.soon { background: var(--yellow); }
+  .timeline-dot.ok { background: var(--green); }
+  .timeline-text { flex: 1; font-size: 13px; }
+  .timeline-date { font-size: 12px; color: var(--dim); }
+
+  /* Summary Stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.red { color: var(--red); }
+  .stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+
+  /* Footer Actions */
+  .footer-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .action-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 20px;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+  .action-btn:hover { border-color: var(--accent); }
+  .action-btn.primary {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .portal-cards { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .score-banner { flex-direction: column; text-align: center; }
+  }
+
+  /* Powered by badge */
+  .powered-by {
+    text-align: center;
+    padding: 20px;
+    color: var(--dim);
+    font-size: 12px;
+  }
+  .powered-by a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🔍</div>
+    ComplianceRadar
+  </div>
+  <div class="header-tag">Indian MSME Compliance Intelligence</div>
+</div>
+
+<div class="main">
+
+  <!-- Input Section -->
+  <div class="input-section">
+    <h2>🏢 Run Compliance Scan</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Company Name *</label>
+        <input type="text" id="companyName" placeholder="e.g., Infosys Limited" />
+      </div>
+      <div class="form-group">
+        <label>PAN Number (Optional)</label>
+        <input type="text" id="panNumber" placeholder="e.g., AABCI1234A" maxlength="10" />
+      </div>
+      <div class="form-group">
+        <label>GSTIN (Optional)</label>
+        <input type="text" id="gstin" placeholder="e.g., 29AABCI1234A1Z5" maxlength="15" />
+      </div>
+      <div class="form-group">
+        <label>State of Operation</label>
+        <select id="state">
+          <option value="">Select State</option>
+          <option value="Maharashtra">Maharashtra</option>
+          <option value="Karnataka">Karnataka</option>
+          <option value="Delhi">Delhi</option>
+          <option value="Tamil Nadu">Tamil Nadu</option>
+          <option value="Uttar Pradesh">Uttar Pradesh</option>
+          <option value="Gujarat">Gujarat</option>
+          <option value="Telangana">Telangana</option>
+          <option value="West Bengal">West Bengal</option>
+          <option value="Rajasthan">Rajasthan</option>
+          <option value="Kerala">Kerala</option>
+        </select>
+      </div>
+    </div>
+
+    <label style="font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px">Select Portals to Scan</label>
+    <div class="portal-selector">
+      <div class="portal-chip selected" data-portal="mca" onclick="togglePortal(this)">🏛️ MCA</div>
+      <div class="portal-chip selected" data-portal="gst" onclick="togglePortal(this)">📋 GST Portal</div>
+      <div class="portal-chip selected" data-portal="incometax" onclick="togglePortal(this)">💰 Income Tax</div>
+      <div class="portal-chip selected" data-portal="epfo" onclick="togglePortal(this)">👥 EPFO</div>
+      <div class="portal-chip selected" data-portal="shops" onclick="togglePortal(this)">🏪 Shops & Establishments</div>
+    </div>
+
+    <button class="scan-btn" id="scanBtn" onclick="startScan()">
+      <span id="scanBtnText">🚀 Run Compliance Scan</span>
+    </button>
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section" id="resultsSection">
+
+    <!-- Agent Activity Feed -->
+    <div class="agent-feed" id="agentFeed">
+      <h3><span style="animation:pulse 1.5s infinite">🟢</span> Live Agent Activity</h3>
+      <div id="feedItems"></div>
+    </div>
+
+    <!-- Live Browser Preview -->
+    <div id="livePreview" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px">
+      <h3 style="font-size:14px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+        <span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1s infinite"></span>
+        Live Browser Preview — Watch the Agent Navigate
+      </h3>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap" id="previewTabs"></div>
+      <div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);background:#000">
+        <iframe id="previewFrame" src="" style="width:100%;height:450px;border:none;background:#111"></iframe>
+      </div>
+      <p style="font-size:11px;color:var(--dim);margin-top:8px">You're watching a real TinyFish agent navigate an Indian government portal in real-time</p>
+    </div>
+
+    <!-- Overall Score Banner -->
+    <div class="score-banner" id="scoreBanner" style="display:none">
+      <div class="score-circle" id="scoreCircle">
+        <span class="score-number" id="scoreNumber">—</span>
+        <span class="score-label">Score</span>
+      </div>
+      <div class="score-info">
+        <h3 id="scoreTitle">Calculating compliance score...</h3>
+        <p id="scoreDescription">Analyzing results from all portals</p>
+      </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-row" id="statsRow" style="display:none">
+      <div class="stat-card">
+        <div class="stat-value green" id="statGreen">0</div>
+        <div class="stat-label">Compliant</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value yellow" id="statYellow">0</div>
+        <div class="stat-label">Needs Attention</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value red" id="statRed">0</div>
+        <div class="stat-label">Critical / Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal" style="color:var(--blue)">0</div>
+        <div class="stat-label">Portals Scanned</div>
+      </div>
+    </div>
+
+    <!-- Gap Alert -->
+    <div class="gap-alert" id="gapAlert">
+      <h3>⚠️ Compliance Gap Detected</h3>
+      <p id="gapAlertText"></p>
+    </div>
+
+    <!-- Portal Cards -->
+    <div class="portal-cards" id="portalCards"></div>
+
+    <!-- Footer Actions -->
+    <div class="footer-actions" id="footerActions" style="display:none">
+      <button class="action-btn primary" onclick="downloadReport()">📄 Download Compliance Brief</button>
+      <button class="action-btn" onclick="newScan()">🔄 New Scan</button>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="powered-by">
+  Powered by <a href="https://tinyfish.ai" target="_blank">TinyFish</a> Web Agent API | Built for the TinyFish $2M Pre-Accelerator Hackathon
+</div>
+
+<script>
+// ---- State ----
+let selectedPortals = ['mca', 'gst', 'incometax', 'epfo', 'shops'];
+let currentScanId = null;
+let pollInterval = null;
+
+// ---- Portal Toggle ----
+function togglePortal(el) {
+  el.classList.toggle('selected');
+  const portal = el.dataset.portal;
+  if (el.classList.contains('selected')) {
+    if (!selectedPortals.includes(portal)) selectedPortals.push(portal);
+  } else {
+    selectedPortals = selectedPortals.filter(p => p !== portal);
+  }
+}
+
+// ---- Start Scan ----
+async function startScan() {
+  const companyName = document.getElementById('companyName').value.trim();
+  if (!companyName) {
+    alert('Please enter a company name');
+    return;
+  }
+  if (selectedPortals.length === 0) {
+    alert('Please select at least one portal');
+    return;
+  }
+
+  // Disable button
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Scanning...';
+
+  // Show results section
+  document.getElementById('resultsSection').classList.add('active');
+  document.getElementById('scoreBanner').style.display = 'none';
+  document.getElementById('statsRow').style.display = 'none';
+  document.getElementById('footerActions').style.display = 'none';
+  document.getElementById('gapAlert').classList.remove('visible');
+  document.getElementById('livePreview').style.display = 'none';
+  document.getElementById('previewTabs').innerHTML = '';
+  document.getElementById('previewFrame').src = '';
+  activePreviewStreams = {};
+
+  // Initialize feed
+  const feedHtml = selectedPortals.map(p => {
+    const portals = {
+      mca: { icon: '🏛️', name: 'MCA Portal' },
+      gst: { icon: '📋', name: 'GST Portal' },
+      incometax: { icon: '💰', name: 'Income Tax' },
+      epfo: { icon: '👥', name: 'EPFO Portal' },
+      shops: { icon: '🏪', name: 'Shops & Establishments' }
+    };
+    return `<div class="feed-item" id="feed-${p}">
+      <span class="feed-icon">${portals[p].icon}</span>
+      <div class="feed-status queued" id="feed-status-${p}"></div>
+      <span class="feed-name">${portals[p].name}</span>
+      <span class="feed-progress" id="feed-progress-${p}">Queued — waiting to start</span>
+    </div>`;
+  }).join('');
+  document.getElementById('feedItems').innerHTML = feedHtml;
+  document.getElementById('portalCards').innerHTML = '';
+
+  // Scroll to results
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+
+  try {
+    const response = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        company_name: companyName,
+        pan_number: document.getElementById('panNumber').value.trim(),
+        gstin: document.getElementById('gstin').value.trim(),
+        state: document.getElementById('state').value,
+        portals: selectedPortals
+      })
+    });
+
+    const data = await response.json();
+    if (data.error) {
+      alert(data.error);
+      resetButton();
+      return;
+    }
+
+    currentScanId = data.scan_id;
+
+    // Start polling for updates
+    pollInterval = setInterval(() => pollScanResults(currentScanId), 2000);
+
+  } catch (err) {
+    alert('Error starting scan: ' + err.message);
+    resetButton();
+  }
+}
+
+// ---- Poll Results ----
+let activePreviewStreams = {};
+
+async function pollScanResults(scanId) {
+  try {
+    const response = await fetch(`/api/scan/${scanId}`);
+    const scan = await response.json();
+
+    if (scan.error) return;
+
+    // Update feed items and collect streaming URLs
+    for (const [key, portal] of Object.entries(scan.portals)) {
+      const statusEl = document.getElementById(`feed-status-${key}`);
+      const progressEl = document.getElementById(`feed-progress-${key}`);
+
+      if (statusEl) {
+        statusEl.className = `feed-status ${portal.status}`;
+      }
+      if (progressEl) {
+        if (portal.status === 'running') {
+          progressEl.textContent = portal.progress || 'Agent navigating portal...';
+        } else if (portal.status === 'completed') {
+          const risk = portal.risk;
+          progressEl.textContent = risk ? risk.label : 'Completed';
+          progressEl.style.color = risk?.score === 'green' ? 'var(--green)' : 
+                                   risk?.score === 'yellow' ? 'var(--yellow)' : 
+                                   risk?.score === 'red' ? 'var(--red)' : 'var(--dim)';
+        } else if (portal.status === 'failed') {
+          progressEl.textContent = 'Failed — could not reach portal';
+          progressEl.style.color = 'var(--red)';
+        }
+      }
+
+      // Handle live browser preview
+      if (portal.streaming_url && !activePreviewStreams[key]) {
+        activePreviewStreams[key] = portal.streaming_url;
+        showLivePreview(key, portal);
+      }
+    }
+
+    // Check if scan is complete
+    if (scan.status === 'completed') {
+      clearInterval(pollInterval);
+      // Hide live preview after completion
+      setTimeout(() => {
+        document.getElementById('livePreview').style.display = 'none';
+      }, 3000);
+      renderResults(scan);
+      resetButton();
+    }
+
+  } catch (err) {
+    console.error('Poll error:', err);
+  }
+}
+
+function showLivePreview(portalKey, portal) {
+  const previewDiv = document.getElementById('livePreview');
+  const tabsDiv = document.getElementById('previewTabs');
+  const frame = document.getElementById('previewFrame');
+  
+  previewDiv.style.display = 'block';
+  
+  const portalNames = {
+    mca: '🏛️ MCA', gst: '📋 GST', incometax: '💰 Income Tax',
+    epfo: '👥 EPFO', shops: '🏪 Shops & Est.'
+  };
+  
+  // Add tab button for this portal
+  const existingTab = document.getElementById(`preview-tab-${portalKey}`);
+  if (!existingTab) {
+    const tab = document.createElement('button');
+    tab.id = `preview-tab-${portalKey}`;
+    tab.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:12px;cursor:pointer;transition:all 0.2s';
+    tab.textContent = portalNames[portalKey] || portalKey;
+    tab.onclick = () => {
+      frame.src = activePreviewStreams[portalKey];
+      // Highlight active tab
+      document.querySelectorAll('[id^="preview-tab-"]').forEach(t => t.style.borderColor = 'var(--border)');
+      tab.style.borderColor = 'var(--accent)';
+    };
+    tabsDiv.appendChild(tab);
+  }
+  
+  // Auto-show first stream
+  if (Object.keys(activePreviewStreams).length === 1) {
+    frame.src = portal.streaming_url;
+    const firstTab = document.getElementById(`preview-tab-${portalKey}`);
+    if (firstTab) firstTab.style.borderColor = 'var(--accent)';
+  }
+}
+
+// ---- Load Demo Results ----
+async function loadDemo() {
+  document.getElementById('companyName').value = 'Infosys Limited';
+  document.getElementById('state').value = 'Maharashtra';
+
+  document.getElementById('resultsSection').classList.add('active');
+
+  // Show loading feed
+  const feedHtml = selectedPortals.map(p => {
+    const portals = {
+      mca: { icon: '🏛️', name: 'MCA Portal' },
+      gst: { icon: '📋', name: 'GST Portal' },
+      incometax: { icon: '💰', name: 'Income Tax' },
+      epfo: { icon: '👥', name: 'EPFO Portal' },
+      shops: { icon: '🏪', name: 'Shops & Establishments' }
+    };
+    return `<div class="feed-item" id="feed-${p}">
+      <span class="feed-icon">${portals[p].icon}</span>
+      <div class="feed-status running" id="feed-status-${p}"></div>
+      <span class="feed-name">${portals[p].name}</span>
+      <span class="feed-progress" id="feed-progress-${p}">Agent navigating portal...</span>
+    </div>`;
+  }).join('');
+  document.getElementById('feedItems').innerHTML = feedHtml;
+
+  // Fetch demo data
+  const response = await fetch('/api/demo');
+  const scan = await response.json();
+
+  // Simulate agents completing one by one
+  const portalKeys = Object.keys(scan.portals);
+  for (let i = 0; i < portalKeys.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    const key = portalKeys[i];
+    const portal = scan.portals[key];
+    const statusEl = document.getElementById(`feed-status-${key}`);
+    const progressEl = document.getElementById(`feed-progress-${key}`);
+    if (statusEl) statusEl.className = 'feed-status completed';
+    if (progressEl) {
+      progressEl.textContent = portal.risk.label;
+      progressEl.style.color = portal.risk.score === 'green' ? 'var(--green)' :
+                               portal.risk.score === 'yellow' ? 'var(--yellow)' :
+                               'var(--red)';
+    }
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 500));
+  renderResults(scan);
+}
+
+// ---- Render Results ----
+function renderResults(scan) {
+  // Score banner
+  const scoreBanner = document.getElementById('scoreBanner');
+  scoreBanner.style.display = 'flex';
+  const score = scan.overall_score || 0;
+  const scoreClass = score >= 75 ? 'green' : score >= 50 ? 'yellow' : 'red';
+  document.getElementById('scoreCircle').className = `score-circle ${scoreClass}`;
+  document.getElementById('scoreNumber').textContent = score;
+  
+  if (score >= 75) {
+    document.getElementById('scoreTitle').textContent = 'Good Compliance Posture';
+    document.getElementById('scoreDescription').textContent = `${scan.company_name} is largely compliant across scanned portals. Minor items may need attention.`;
+  } else if (score >= 50) {
+    document.getElementById('scoreTitle').textContent = 'Needs Attention';
+    document.getElementById('scoreDescription').textContent = `${scan.company_name} has compliance issues that should be addressed promptly.`;
+  } else {
+    document.getElementById('scoreTitle').textContent = 'Critical Compliance Issues';
+    document.getElementById('scoreDescription').textContent = `${scan.company_name} has significant compliance gaps. Immediate action recommended.`;
+  }
+
+  // Stats
+  let greenCount = 0, yellowCount = 0, redCount = 0;
+  const gapMessages = [];
+
+  for (const [key, portal] of Object.entries(scan.portals)) {
+    if (portal.risk) {
+      if (portal.risk.score === 'green') greenCount++;
+      else if (portal.risk.score === 'yellow') yellowCount++;
+      else if (portal.risk.score === 'red') {
+        redCount++;
+        if (portal.risk.label.includes('Gap Detected')) {
+          gapMessages.push(`${portal.name}: ${portal.risk.detail}`);
+        }
+      }
+    }
+  }
+
+  document.getElementById('statsRow').style.display = 'grid';
+  document.getElementById('statGreen').textContent = greenCount;
+  document.getElementById('statYellow').textContent = yellowCount;
+  document.getElementById('statRed').textContent = redCount;
+  document.getElementById('statTotal').textContent = Object.keys(scan.portals).length;
+
+  // Gap alert
+  if (gapMessages.length > 0) {
+    document.getElementById('gapAlert').classList.add('visible');
+    document.getElementById('gapAlertText').innerHTML = gapMessages.join('<br><br>');
+  }
+
+  // Portal cards
+  let cardsHtml = '';
+  for (const [key, portal] of Object.entries(scan.portals)) {
+    const risk = portal.risk || {};
+    const badgeClass = risk.score === 'green' ? 'badge-green' : risk.score === 'yellow' ? 'badge-yellow' : 'badge-red';
+    const badgeText = risk.score === 'green' ? 'Compliant' : risk.score === 'yellow' ? 'Warning' : 'Critical';
+    const actionClass = risk.score === 'red' ? 'red-action' : risk.score === 'yellow' ? 'yellow-action' : '';
+
+    // Build data rows from result
+    let dataRows = '';
+    if (portal.result && portal.result.status !== 'NOT_FOUND') {
+      const skipKeys = ['status', 'compliance_issues', 'directors', 'company_name'];
+      for (const [dk, dv] of Object.entries(portal.result)) {
+        if (skipKeys.includes(dk) || !dv || typeof dv === 'object') continue;
+        const label = dk.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        dataRows += `<div class="data-row"><span class="data-key">${label}</span><span class="data-value">${dv}</span></div>`;
+      }
+    }
+
+    cardsHtml += `
+      <div class="portal-card">
+        <div class="portal-card-header">
+          <span class="portal-card-icon">${portal.icon}</span>
+          <span class="portal-card-name">${portal.name}</span>
+          <span class="portal-card-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="portal-card-body">
+          <div class="portal-card-label">${risk.label || 'Processing...'}</div>
+          <div class="portal-card-detail">${risk.detail || ''}</div>
+          <div class="portal-card-action ${actionClass}">💡 ${risk.action || 'No action needed'}</div>
+          ${dataRows ? `<div class="portal-card-data">${dataRows}</div>` : ''}
+        </div>
+      </div>`;
+  }
+  document.getElementById('portalCards').innerHTML = cardsHtml;
+
+  // Footer actions
+  document.getElementById('footerActions').style.display = 'flex';
+}
+
+// ---- Download Report ----
+function downloadReport() {
+  // Generate a simple text report
+  const company = document.getElementById('companyName').value;
+  const score = document.getElementById('scoreNumber').textContent;
+  
+  let report = `COMPLIANCERADAR — COMPLIANCE INTELLIGENCE BRIEF\n`;
+  report += `${'='.repeat(50)}\n\n`;
+  report += `Company: ${company}\n`;
+  report += `Scan Date: ${new Date().toLocaleString()}\n`;
+  report += `Overall Compliance Score: ${score}/100\n\n`;
+  report += `${'='.repeat(50)}\n`;
+  report += `PORTAL-WISE RESULTS\n`;
+  report += `${'='.repeat(50)}\n\n`;
+
+  document.querySelectorAll('.portal-card').forEach(card => {
+    const name = card.querySelector('.portal-card-name').textContent;
+    const badge = card.querySelector('.portal-card-badge').textContent;
+    const label = card.querySelector('.portal-card-label').textContent;
+    const detail = card.querySelector('.portal-card-detail').textContent;
+    const action = card.querySelector('.portal-card-action').textContent;
+
+    report += `${name}\n`;
+    report += `Status: ${badge}\n`;
+    report += `${label}\n`;
+    report += `${detail}\n`;
+    report += `Action: ${action}\n`;
+    report += `${'-'.repeat(40)}\n\n`;
+  });
+
+  report += `\nGenerated by ComplianceRadar | Powered by TinyFish Web Agent API\n`;
+  report += `https://tinyfish.ai\n`;
+
+  const blob = new Blob([report], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ComplianceRadar_${company.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ---- New Scan ----
+function newScan() {
+  document.getElementById('resultsSection').classList.remove('active');
+  document.getElementById('companyName').value = '';
+  document.getElementById('panNumber').value = '';
+  document.getElementById('gstin').value = '';
+  document.getElementById('state').value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ---- Reset Button ----
+function resetButton() {
+  const btn = document.getElementById('scanBtn');
+  btn.disabled = false;
+  btn.innerHTML = '🚀 Run Compliance Scan';
+}
+</script>
+
+</body>
+</html>
