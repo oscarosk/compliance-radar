@@ -4,6 +4,8 @@
 
 Built for the TinyFish $2M Pre-Accelerator Hackathon.
 
+![ComplianceRadar Dashboard](dashboard.jpeg)
+
 ## What It Does
 
 ComplianceRadar deploys parallel TinyFish web agents across 5 Indian government portals to deliver a risk-scored compliance brief for any business — in minutes, not days.
